@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <style>
+        .videoContainer {
+            position: relative;
+            width: 200px;
+            height: 150px;
+        }
+        .videoContainer video {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+        .volume_bar {
+            position: absolute;
+            width: 5px;
+            height: 0px;
+            right: 0px;
+            bottom: 0px;
+            background-color: #12acef;
+        }
+
+        :root {
+          --jumbotron-padding-y: 3rem;
+        }
+
+        .jumbotron {
+          padding-top: var(--jumbotron-padding-y);
+          padding-bottom: var(--jumbotron-padding-y);
+          margin-bottom: 0;
+          background-color: #fff;
+        }
+        @media (min-width: 768px) {
+          .jumbotron {
+            /*padding-top: calc(var(--jumbotron-padding-y) * 2);
+            padding-bottom: calc(var(--jumbotron-padding-y) * 2);*/
+          }
+        }
+
+        .jumbotron p:last-child {
+          margin-bottom: 0;
+        }
+
+        .jumbotron-heading {
+          font-weight: 300;
+        }
+
+        .jumbotron .container {
+          max-width: 40rem;
+        }
+
+        footer {
+          padding-top: 3rem;
+          padding-bottom: 3rem;
+        }
+
+        footer p {
+          margin-bottom: .25rem;
+        }
+
+        .box-shadow { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05); }
+
+    </style>
+
+    <title>Knowledge Network</title>
+  </head>
+  <body>
+    <header>
+      <div class="collapse bg-dark" id="navbarHeader">
+        <div class="container">
+          <div class="row">
+            <div class="col-sm-8 col-md-7 py-4">
+              <h4 class="text-white">About</h4>
+              <p class="text-muted">Truly simple platform for sharing knowledge. No downloads or payment required.</p>
+            </div>
+            <div class="col-sm-4 offset-md-1 py-4">
+              <h4 class="text-white">Contact</h4>
+              <ul class="list-unstyled">
+                <li><a href="#" class="text-white">Follow on Twitter</a></li>
+                <li><a href="#" class="text-white">Like on Facebook</a></li>
+                <li><a href="mailto:contact@ninaddeshpande.com" class="text-white">Email me</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="navbar navbar-dark bg-dark box-shadow">
+        <div class="container d-flex justify-content-between">
+          <a href="#" class="navbar-brand d-flex align-items-center">
+            <!--<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>-->
+            <strong>Knowledge Network</strong>
+          </a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main role="main">
+
+  <section class="jumbotron text-center">
+    <div class="container">
+      <h1 class="jumbotron-heading">Have something to share with the rest of the world?</h1>
+      <!-- <h1 id="title">Start a room</h1> -->
+
+
+      <!-- <p>
+        <a href="#" class="btn btn-primary my-2">Main call to action</a>
+        <a href="#" class="btn btn-secondary my-2">Secondary action</a>
+      </p> -->
+
+      <!-- <button class="btn btn-secondary my-2" id="screenShareButton"></button> -->
+
+      <div class="jumbotron heading">
+          <video id="localVideo" style="height: 250px;" oncontextmenu="return false;"></video>
+          <div id="localVolume" class="volume_bar"></div>
+      </div>
+      <p id="subTitle"></p>
+      <form id="createRoom">
+          <input id="sessionInput" autocomplete="off"/>
+          <button class="btn btn-primary my-2" type="submit">Create Room!</button>
+      </form>
+      <div id="remotes"></div>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+      <script src="../out/simplewebrtc-with-adapter.bundle.js"></script>
+      <script>
+          // grab the room from the URL
+          var room = location.search && location.search.split('?')[1];
+
+          // create our webrtc connection
+          var webrtc = new SimpleWebRTC({
+              // the id/element dom element that will hold "our" video
+              localVideoEl: 'localVideo',
+              // the id/element dom element that will hold remote videos
+              remoteVideosEl: '',
+              // immediately ask for camera access
+              autoRequestMedia: true,
+              debug: false,
+              detectSpeakingEvents: true
+          });
+
+          // when it's ready, join if we got a room from the URL
+          webrtc.on('readyToCall', function () {
+              // you can name it anything
+              if (room) webrtc.joinRoom(room);
+          });
+
+          function showVolume(el, volume) {
+              if (!el) return;
+              if (volume < -45) { // vary between -45 and -20
+                  el.style.height = '0px';
+              } else if (volume > -20) {
+                  el.style.height = '100%';
+              } else {
+                  el.style.height = '' + Math.floor((volume + 100) * 100 / 25 - 220) + '%';
+              }
+          }
+          webrtc.on('channelMessage', function (peer, label, data) {
+              if (data.type == 'volume') {
+                  showVolume(document.getElementById('volume_' + peer.id), data.volume);
+              }
+          });
+          webrtc.on('videoAdded', function (video, peer) {
+              console.log('video added', peer);
+              var remotes = document.getElementById('remotes');
+              if (remotes) {
+                  var d = document.createElement('div');
+                  d.className = 'videoContainer';
+                  d.id = 'container_' + webrtc.getDomId(peer);
+                  d.appendChild(video);
+                  var vol = document.createElement('div');
+                  vol.id = 'volume_' + peer.id;
+                  vol.className = 'volume_bar';
+                  video.onclick = function () {
+                      video.style.width = video.videoWidth + 'px';
+                      video.style.height = video.videoHeight + 'px';
+                  };
+                  d.appendChild(vol);
+                  remotes.appendChild(d);
+              }
+          });
+          webrtc.on('videoRemoved', function (video, peer) {
+              console.log('video removed ', peer);
+              var remotes = document.getElementById('remotes');
+              var el = document.getElementById('container_' + webrtc.getDomId(peer));
+              if (remotes && el) {
+                  remotes.removeChild(el);
+              }
+          });
+          webrtc.on('volumeChange', function (volume, treshold) {
+              //console.log('own volume', volume);
+              showVolume(document.getElementById('localVolume'), volume);
+          });
+
+          // Since we use this twice we put it here
+          function setRoom(name) {
+              $('form').remove();
+              $('h1').text(name);
+              $('#subTitle').text('Link to join: ' + location.href);
+              $('body').addClass('active');
+          }
+
+          if (room) {
+              setRoom(room);
+          } else {
+              $('form').submit(function () {
+                $('#subTitle').text('Creating a room... ');
+                  var val = $('#sessionInput').val().toLowerCase().replace(/\s/g, '-').replace(/[^A-Za-z0-9_\-]/g, '');
+                  webrtc.createRoom(val, function (err, name) {
+                      console.log(' create room cb', arguments);
+
+                      var newUrl = location.pathname + '?' + name;
+                      if (!err) {
+                          history.replaceState({foo: 'bar'}, null, newUrl);
+                          setRoom(name);
+                      } else {
+                          console.log(err);
+                      }
+                  });
+                  return false;
+              });
+          }
+
+          var button = $('#screenShareButton'),
+              setButton = function (bool) {
+                  button.text(bool ? 'share screen' : 'stop sharing');
+              };
+          webrtc.on('localScreenStopped', function () {
+              setButton(true);
+          });
+
+          setButton(true);
+
+          button.click(function () {
+              if (webrtc.getLocalScreen()) {
+                  webrtc.stopScreenShare();
+                  setButton(true);
+              } else {
+                  webrtc.shareScreen(function (err) {
+                      if (err) {
+                          setButton(true);
+                      } else {
+                          setButton(false);
+                      }
+                  });
+
+              }
+          });
+      </script>
+      <!-- <p class="lead text-muted">Something short and leading about the collection below—its contents, the creator, etc. Make it short and sweet, but not too short so folks don't simply skip over it entirely.</p> -->
+    </div>
+  </section>
+  <!-- <div class="album py-5 bg-light">
+    <div class="container">
+
+      <div class="row">
+        <div class="col-md-4">
+          <div class="card mb-4 box-shadow">
+            <img class="card-img-top" data-src="holder.js/100px225?theme=thumb&bg=55595c&fg=eceeef&text=Thumbnail" alt="Card image cap">
+            <div class="card-body">
+              <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="btn-group">
+                  <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                </div>
+                <small class="text-muted">9 mins</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card mb-4 box-shadow">
+            <img class="card-img-top" data-src="holder.js/100px225?theme=thumb&bg=55595c&fg=eceeef&text=Thumbnail" alt="Card image cap">
+            <div class="card-body">
+              <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="btn-group">
+                  <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                </div>
+                <small class="text-muted">9 mins</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card mb-4 box-shadow">
+            <img class="card-img-top" data-src="holder.js/100px225?theme=thumb&bg=55595c&fg=eceeef&text=Thumbnail" alt="Card image cap">
+            <div class="card-body">
+              <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="btn-group">
+                  <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                </div>
+                <small class="text-muted">9 mins</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="card mb-4 box-shadow">
+            <img class="card-img-top" data-src="holder.js/100px225?theme=thumb&bg=55595c&fg=eceeef&text=Thumbnail" alt="Card image cap">
+            <div class="card-body">
+              <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="btn-group">
+                  <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                </div>
+                <small class="text-muted">9 mins</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card mb-4 box-shadow">
+            <img class="card-img-top" data-src="holder.js/100px225?theme=thumb&bg=55595c&fg=eceeef&text=Thumbnail" alt="Card image cap">
+            <div class="card-body">
+              <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="btn-group">
+                  <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                </div>
+                <small class="text-muted">9 mins</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card mb-4 box-shadow">
+            <img class="card-img-top" data-src="holder.js/100px225?theme=thumb&bg=55595c&fg=eceeef&text=Thumbnail" alt="Card image cap">
+            <div class="card-body">
+              <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="btn-group">
+                  <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                </div>
+                <small class="text-muted">9 mins</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="card mb-4 box-shadow">
+            <img class="card-img-top" data-src="holder.js/100px225?theme=thumb&bg=55595c&fg=eceeef&text=Thumbnail" alt="Card image cap">
+            <div class="card-body">
+              <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="btn-group">
+                  <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                </div>
+                <small class="text-muted">9 mins</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card mb-4 box-shadow">
+            <img class="card-img-top" data-src="holder.js/100px225?theme=thumb&bg=55595c&fg=eceeef&text=Thumbnail" alt="Card image cap">
+            <div class="card-body">
+              <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="btn-group">
+                  <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                </div>
+                <small class="text-muted">9 mins</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card mb-4 box-shadow">
+            <img class="card-img-top" data-src="holder.js/100px225?theme=thumb&bg=55595c&fg=eceeef&text=Thumbnail" alt="Card image cap">
+            <div class="card-body">
+              <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="btn-group">
+                  <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                </div>
+                <small class="text-muted">9 mins</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> -->
+</main>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  </body>
+</html>
